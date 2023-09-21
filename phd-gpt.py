@@ -42,6 +42,22 @@ def summarize_long(article, article_name):
         print(f"Summarizing chunk {i + 1} of {article_name}")
         summary = summarize_article(chunk, chunk_prompt)
         summaries.append(summary)
+        #write intermediate summaries to /intermediaries 
+        with open(f"./intermediaries/{article_name}_summary_{i + 1}.txt", "w") as f:
+            f.write(summary)
+    # perform length check on summaries together
+    all_summaries = ' '.join(summaries)
+    if len(all_summaries.split()) > 5000:
+        print("Summaries are long: will chunk again")
+        summary_words = all_summaries.split()
+        summary_chunks = [' '.join(summary_words[i:i + 5000]) for i in range(0, len(summary_words), 5000)]
+        summary_summaries = []
+        for j, sum_chunk in enumerate(summary_chunks):
+            print(f"Summarizing chunk {j + 1} of summary of {article_name}")
+            summary_of_summary = summarize_article(sum_chunk, chunk_prompt)
+            summary_summaries.append(summary_of_summary)
+        summaries = summary_summaries
+
     final_summary = summarize_article(' '.join(summaries), final_summary_prompt)
     with open(f"./summaries/{article_name}_final_summary.txt", "w") as f:
         f.write(final_summary)
